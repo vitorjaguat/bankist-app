@@ -78,10 +78,11 @@ const displayMovements = function (movements) {
   })
 }
 
-
-const calcDisplayBalance = function (movements) {
-  const balance = movements.reduce((acc, mov) => acc + mov, 0);
-  labelBalance.textContent = `${balance}€`;
+//Calculating and displaying balance/summary
+const calcDisplayBalance = function (acc) {
+  acc.balance = acc.movements.reduce((acc, mov) => acc + mov, 0);
+  labelBalance.textContent = `${acc.balance}€`;
+  // acc.balance = balance;
 };
 
 const calcDisplaySummary = function (acc) {
@@ -118,6 +119,16 @@ const createUsernames = function (accs) {
 };
 createUsernames(accounts);
 
+//Update UI function (refactoring display Ba;ance, Summary, Movements)
+const updateUI = function (acc) {
+  //Display movements
+  displayMovements(acc.movements);
+  //Display balance
+  calcDisplayBalance(acc)
+  //Display summary
+  calcDisplaySummary(acc)
+}
+
 
 //Event handlers:
 let currentAccount;
@@ -136,17 +147,64 @@ btnLogin.addEventListener('click', function (e) {
     //Display UI and message
     labelWelcome.textContent = `Welcome back, ${currentAccount.owner.split(' ')[0]}`;
     containerApp.style.opacity = 100;
-    //Display movements
-    displayMovements(currentAccount.movements);
-    //Display balance
-    calcDisplayBalance(currentAccount.movements)
-    //Display summary
-    calcDisplaySummary(currentAccount)
-  }
 
+    //Update UI
+    updateUI(currentAccount)
+
+  }
+});
+
+
+
+
+//Imprementing transfers:
+btnTransfer.addEventListener('click', function (e) {
+  e.preventDefault();
+  const amount = Number(inputTransferAmount.value);
+  const receiverAcc = accounts.find(acc => acc.username === inputTransferTo.value
+  );
+  inputTransferAmount.value = inputTransferTo.value = '';
+
+  if (amount > 0 && amount <= currentAccount.balance && receiverAcc && receiverAcc?.username !== currentAccount.username) {
+    console.log('Transfer valid');
+    //Doing the transfer:
+    receiverAcc.movements.push(amount);
+    currentAccount.movements.push(-amount)
+    //Update UI:
+    updateUI(currentAccount);
+  }
+});
+
+//Loan:
+btnLoan.addEventListener('click', function (e) {
+  e.preventDefault();
+  const amount = Number(inputLoanAmount.value);
+  if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
+    //Add the positive movement:
+    currentAccount.movements.push(amount);
+    //Update UI:
+    updateUI(currentAccount);
+  }
+  inputLoanAmount.value = '';
 })
 
 
+//Closing accounts:
+btnClose.addEventListener('click', function (e) {
+  e.preventDefault();
+
+  if (inputCloseUsername.value === currentAccount.username && Number(inputClosePin.value) === currentAccount.pin) {
+    //Select the index of the user to be removed:
+    const index = accounts.findIndex(acc => acc.username === currentAccount.username);
+    //Delete account:
+    accounts.splice(index, 1);
+    //Hide UI:
+    containerApp.style.opacity = 0;
+  }
+
+  inputCloseUsername.value = inputClosePin.value = '';
+
+})
 
 
 
