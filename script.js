@@ -61,10 +61,14 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
-const displayMovements = function (movements) {
+const displayMovements = function (movements, sort = false) {
   containerMovements.innerHTML = '';
 
-  movements.forEach(function (mov, i) {
+  //Sort button:
+  const movs = sort ? movements.slice().sort((a, b) => a - b) : movements;
+
+  //Inserting HTML:
+  movs.forEach(function (mov, i) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
 
     const html = `
@@ -203,7 +207,31 @@ btnClose.addEventListener('click', function (e) {
   }
 
   inputCloseUsername.value = inputClosePin.value = '';
+})
 
+//Overall balance:
+// const accountMovements = accounts.map(acc => acc.movements);
+// const allMovements = accountMovements.flat();
+// const overalBalance = allMovements.reduce((acu, mov) => acu+mov, 0);
+
+//Using flat:
+const overalBalance = accounts
+  .map(acc => acc.movements)
+  .flat()
+  .reduce((acu, mov) => acu + mov, 0);
+
+const overalBalance2 = accounts
+  .flatMap(acc => acc.movements)
+  .reduce((acu, mov) => acu + mov, 0);
+console.log(overalBalance)
+
+
+//Sort button (2/2):
+let sorted = false;
+btnSort.addEventListener('click', function (e) {
+  e.preventDefault();
+  displayMovements(currentAccount.movements, !sorted);
+  sorted = !sorted;
 })
 
 
